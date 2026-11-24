@@ -1,121 +1,185 @@
 import 'package:flutter/material.dart';
+import 'services/cep_service.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ConsultaCepApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ConsultaCepApp extends StatelessWidget {
+  const ConsultaCepApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'Consulta CEP',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.blueAccent,
+          brightness: Brightness.light,
+        ),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const ConsultaCepPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class ConsultaCepPage extends StatefulWidget {
+  const ConsultaCepPage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<ConsultaCepPage> createState() => _ConsultaCepPageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _ConsultaCepPageState extends State<ConsultaCepPage> {
+  final CepService _cepService = CepService();
 
-  void _incrementCounter() {
+  // Controllers para os TextFields
+  final TextEditingController _cepController = TextEditingController();
+  final TextEditingController _logradouroController = TextEditingController();
+  final TextEditingController _bairroController = TextEditingController();
+  final TextEditingController _localidadeController = TextEditingController();
+  final TextEditingController _ufController = TextEditingController();
+
+  bool _carregando = false;
+
+  Future<void> _consultarCep() async {
+    final cep = _cepController.text.trim();
+    if (cep.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Por favor, informe o CEP.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
+
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _carregando = true;
     });
+
+    try {
+      final endereco = await _cepService.buscarCep(cep);
+      setState(() {
+        _logradouroController.text = endereco.logradouro;
+        _bairroController.text = endereco.bairro;
+        _localidadeController.text = endereco.localidade;
+        _ufController.text = endereco.uf;
+      });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('CEP consultado com sucesso!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _carregando = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _cepController.dispose();
+    _logradouroController.dispose();
+    _bairroController.dispose();
+    _localidadeController.dispose();
+    _ufController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
+        title: const Text('Consulta CEP - ViaCEP'),
+        centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+            TextField(
+              controller: _cepController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'CEP',
+                hintText: 'Digite o CEP (somente números)',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.search),
+              ),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton(
+              onPressed: _carregando ? null : _consultarCep,
+              child: _carregando
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Text('Consultar CEP'),
+            ),
+            const SizedBox(height: 24),
+            const Divider(),
+            const SizedBox(height: 12),
+            // Atenção: Os dados vindos da api logradouro, bairro, localidade, uf
+            // devem estar cada um em um textfield diferente
+            TextField(
+              controller: _logradouroController,
+              decoration: const InputDecoration(
+                labelText: 'Logradouro',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.home),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _bairroController,
+              decoration: const InputDecoration(
+                labelText: 'Bairro',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.location_city),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _localidadeController,
+              decoration: const InputDecoration(
+                labelText: 'Localidade',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.map),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _ufController,
+              decoration: const InputDecoration(
+                labelText: 'UF',
+                border: OutlineInputBorder(),
+                prefixIcon: Icon(Icons.flag),
+              ),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
       ),
     );
   }
