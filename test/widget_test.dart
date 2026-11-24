@@ -1,30 +1,26 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:consulta_cep/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Verifica a presenca dos campos e componentes principais', (WidgetTester tester) async {
+    // Constrói a tela da aplicação
+    await tester.pumpWidget(const ConsultaCepApp());
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // 1. Verifica título na AppBar
+    expect(find.text('Consulta de CEP'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // 2. Verifica campo de CEP e botão Consultar
+    expect(find.widgetWithText(TextField, 'CEP'), findsOneWidget);
+    expect(find.widgetWithText(ElevatedButton, 'Consultar CEP'), findsOneWidget);
+    expect(find.widgetWithText(OutlinedButton, 'Limpar'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // 3. Verifica os campos obrigatórios em TextFields separados:
+    // logradouro, bairro, localidade e uf
+    expect(find.widgetWithText(TextField, 'Logradouro (Rua, Avenida, etc.)'), findsOneWidget);
+    expect(find.widgetWithText(TextField, 'Bairro'), findsOneWidget);
+    expect(find.widgetWithText(TextField, 'Localidade (Cidade)'), findsOneWidget);
+    expect(find.widgetWithText(TextField, 'UF (Estado)'), findsOneWidget);
   });
 }

@@ -1,17 +1,59 @@
-# consulta_cep
+# Aplicativo de Consulta de CEP - ViaCEP (Flutter)
 
-A new Flutter project.
+Aplicativo desenvolvido em Flutter para consulta de endereços a partir do Código de Endereçamento Postal (CEP), consumindo a API pública do [ViaCEP](https://viacep.com.br/) utilizando o pacote [`http`](https://pub.dev/packages/http).
 
-## Getting Started
+## Requisitos Atendidos
 
-This project is a starting point for a Flutter application.
+1. **Biblioteca HTTP**: Integração com a biblioteca oficial `http` (pub.dev) para requisições assíncronas à API REST.
+2. **Consulta na API ViaCEP**: Endpoint `https://viacep.com.br/ws/{cep}/json/`.
+3. **Campos Separados em TextFields Individuais**:
+   - `logradouro` -> `TextField` dedicado
+   - `bairro` -> `TextField` dedicado
+   - `localidade` -> `TextField` dedicado
+   - `uf` -> `TextField` dedicado
+   - *(Bônus)*: Campos para Complemento e DDD, além de chips de teste rápido para CEPs de várias cidades.
+4. **Controle de Versão Git**:
+   - Histórico com múltiplos commits estruturados demonstrando a evolução do desenvolvimento.
+   - Pelo menos 3 commits no repositório.
 
-A few resources to get you started if this is your first Flutter project:
+## Arquitetura do Projeto
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+```
+lib/
+├── main.dart                   # Interface do usuário com os TextFields e tratamento de estados
+├── models/
+│   └── endereco_model.dart     # Modelo de dados com parsing do JSON da API ViaCEP
+└── services/
+    └── cep_service.dart        # Serviço de requisição HTTP assíncrona ao ViaCEP
+test/
+└── widget_test.dart            # Testes de widgets verificando a presença dos TextFields
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Como Executar
+
+### Pré-requisitos
+- Flutter SDK instalado (versão 3.x ou superior)
+- Conexão com a internet
+
+### Passos
+
+```bash
+# Entrar na pasta do projeto
+cd consulta_cep
+
+# Obter dependências
+flutter pub get
+
+# Executar testes
+flutter test
+
+# Executar o aplicativo
+flutter run
+```
+
+## Histórico de Commits
+
+1. `chore: inicializar estrutura base do projeto Flutter Consulta CEP`
+2. `feat: adicionar dependencia http e criar modelo EnderecoModel`
+3. `feat: implementar servico ViaCepService e tela com TextFields para logradouro, bairro, localidade e uf`
+4. `feat: adicionar tratamento de erros, estados de carregamento, atalhos de teste e widget tests`
